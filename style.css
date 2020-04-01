@@ -32,7 +32,6 @@ body {
 
 .row {
     display: flex;
-    /* justify-content: center; */
     margin-bottom: 12px;
 }
 
@@ -56,8 +55,8 @@ body {
     z-index: 1;
 }
 
-.key:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+.key.active {
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .space-key {
@@ -81,10 +80,6 @@ body {
     background-color: #5dd2ff;
     opacity: 1;
 }
-
-/* .key:last-child {
-    margin-right: 0;
-} */
 
 .hide-text {
     font-size: 0;
@@ -120,7 +115,8 @@ body {
     font-size: 10px;
 }
 
-.shift {
+.lShift,
+.rShift {
     width: 79px;
 }
 
