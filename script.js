@@ -9,31 +9,35 @@ const lettersList = {
     'b', 'n', 'm', ',', '.', '/', 'Shift', 'Up', 'Ctrl', 'Win', 'Alt', ' ', 'Alt', 'Ctrl', 'Left', 'Down', 'Right'],
 };
 let capsOn = false;
-let language = 'en';
+let language = '';
+if (localStorage.language === undefined) {
+  language = 'en';
+  localStorage.language = language;
+} else { language = localStorage.language; }
 
 function createKeyboard() {
   const Element = document.createElement('div');
-  document.body.innerHTML = '';
   Element.innerHTML = `<textarea class="text-content" cols="45" rows="10"></textarea>
   <div class="keyboard">
   <div class="row"></div>
   <div class="row"></div>
   <div class="row"></div>
   <div class="row"></div>
-  <div class="row"></div>`;
-
+  <div class="row"></div></div>
+  <p class="hint"><b>CTRL + ALT change keyboard layout</b></p>
+  <p class="hint"><b>Made on Windows OS</b></p>`;
   document.body.append(Element);
 
   let a = 0;
   const key = document.querySelectorAll('.row');
   function keyGeneration(n) {
     const result = [];
-    if (language === 'en') {
-      for (let i = 1; i <= n; i += 1) {
-        const div = document.createElement('div');
-        div.classList.add('key');
-        const span = document.createElement('span');
-        div.append(span);
+    for (let i = 1; i <= n; i += 1) {
+      const div = document.createElement('div');
+      div.classList.add('key');
+      const span = document.createElement('span');
+      div.append(span);
+      if (language === 'en') {
         if (Array.isArray(lettersList.engKeys[a])) {
           span.append(lettersList.engKeys[a][0]);
         } else { span.append(lettersList.engKeys[a]); }
@@ -70,13 +74,7 @@ function createKeyboard() {
         }
         a += 1;
         result.push(div);
-      }
-    } else if (language === 'ru') {
-      for (let i = 1; i <= n; i += 1) {
-        const div = document.createElement('div');
-        div.classList.add('key');
-        const span = document.createElement('span');
-        div.append(span);
+      } else if (language === 'ru') {
         if (Array.isArray(lettersList.rusKeys[a])) {
           span.append(lettersList.rusKeys[a][0]);
         } else { span.append(lettersList.rusKeys[a]); }
@@ -115,7 +113,6 @@ function createKeyboard() {
         result.push(div);
       }
     }
-
     return result;
   }
 
@@ -132,16 +129,25 @@ const Textarea = document.querySelector('textarea');
 const body = document.querySelector('body');
 
 body.addEventListener('keydown', (event) => {
-  if (event.shiftKey && event.altKey && language === 'en') {
-    language = 'ru';
-    createKeyboard();
-  } else if (event.shiftKey && event.altKey && language === 'ru') {
-    language = 'en';
-    createKeyboard();
-  }
   if (event.key === 'Tab') {
     event.preventDefault();
     Textarea.value += '\t';
+  }
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    Textarea.value += '↑';
+  }
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    Textarea.value += '↓';
+  }
+  if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    Textarea.value += '→';
+  }
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    Textarea.value += '←';
   }
   for (let i = 0; i < 64; i += 1) {
     if (event.code === 'ShiftLeft' && i === 42) {
@@ -198,6 +204,7 @@ body.addEventListener('keyup', (event) => {
 let activeElement = '';
 
 Keyboard.addEventListener('mousedown', (event) => {
+  Textarea.focus();
   let elementToDelete = '';
   if (event.target.classList[0] === 'key') {
     activeElement = event.target;
@@ -212,6 +219,22 @@ Keyboard.addEventListener('mousedown', (event) => {
   }
   if (event.target.textContent === 'Tab') {
     Textarea.value += '\t';
+  }
+  if (event.target.textContent === 'Up') {
+    event.preventDefault();
+    Textarea.value += '↑';
+  }
+  if (event.target.textContent === 'Down') {
+    event.preventDefault();
+    Textarea.value += '↓';
+  }
+  if (event.target.textContent === 'Right') {
+    event.preventDefault();
+    Textarea.value += '→';
+  }
+  if (event.target.textContent === 'Left') {
+    event.preventDefault();
+    Textarea.value += '←';
   }
   if (event.target.textContent === '←') {
     for (let k = 0; k < Textarea.value.length - 1; k += 1) {
@@ -240,14 +263,25 @@ Textarea.addEventListener('keydown', (event) => {
     const span = document.querySelectorAll('span');
     let a = 0;
     for (let i = 0; i < span.length; i += 1) {
-      if (Array.isArray(lettersList.engKeys[a])) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a][1]);
-      } else if (span[i].textContent.length === 1) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a].toUpperCase());
+      if (language === 'en') {
+        if (Array.isArray(lettersList.engKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a].toUpperCase());
+        }
+        a += 1;
+      } else {
+        if (Array.isArray(lettersList.rusKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a].toUpperCase());
+        }
+        a += 1;
       }
-      a += 1;
     }
   }
   if (event.key === 'CapsLock' && !capsOn) {
@@ -255,28 +289,50 @@ Textarea.addEventListener('keydown', (event) => {
     const span = document.querySelectorAll('span');
     let a = 14;
     for (let i = 14; i < span.length; i += 1) {
-      if (Array.isArray(lettersList.engKeys[a])) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a][1]);
-      } else if (span[i].textContent.length === 1) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a].toUpperCase());
+      if (language === 'en') {
+        if (Array.isArray(lettersList.engKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a].toUpperCase());
+        }
+        a += 1;
+      } else if (language === 'ru') {
+        if (Array.isArray(lettersList.rusKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a].toUpperCase());
+        }
+        a += 1;
       }
-      a += 1;
     }
   } else if (event.key === 'CapsLock' && capsOn) {
     capsOn = !capsOn;
     const span = document.querySelectorAll('span');
     let a = 14;
     for (let i = 14; i < span.length; i += 1) {
-      if (Array.isArray(lettersList.engKeys[a])) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a][1]);
-      } else if (span[i].textContent.length === 1) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a].toLowerCase());
+      if (language === 'en') {
+        if (Array.isArray(lettersList.engKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a].toLowerCase());
+        }
+        a += 1;
+      } else {
+        if (Array.isArray(lettersList.rusKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a].toLowerCase());
+        }
+        a += 1;
       }
-      a += 1;
     }
   }
 });
@@ -286,14 +342,25 @@ Textarea.addEventListener('keyup', (event) => {
     const span = document.querySelectorAll('span');
     let a = 0;
     for (let i = 0; i < span.length; i += 1) {
-      if (Array.isArray(lettersList.engKeys[a])) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a][0]);
-      } else if (span[i].textContent.length === 1) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a].toLowerCase());
+      if (language === 'en') {
+        if (Array.isArray(lettersList.engKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a][0]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a].toLowerCase());
+        }
+        a += 1;
+      } else {
+        if (Array.isArray(lettersList.rusKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a][0]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a].toLowerCase());
+        }
+        a += 1;
       }
-      a += 1;
     }
   }
 });
@@ -303,14 +370,25 @@ Keyboard.addEventListener('mousedown', (event) => {
     const span = document.querySelectorAll('span');
     let a = 0;
     for (let i = 0; i < span.length; i += 1) {
-      if (Array.isArray(lettersList.engKeys[a])) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a][1]);
-      } else if (span[i].textContent.length === 1) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a].toUpperCase());
+      if (language === 'en') {
+        if (Array.isArray(lettersList.engKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a].toUpperCase());
+        }
+        a += 1;
+      } else {
+        if (Array.isArray(lettersList.rusKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a][1]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a].toUpperCase());
+        }
+        a += 1;
       }
-      a += 1;
     }
   }
 });
@@ -320,14 +398,54 @@ Keyboard.addEventListener('mouseup', (event) => {
     const span = document.querySelectorAll('span');
     let a = 0;
     for (let i = 0; i < span.length; i += 1) {
-      if (Array.isArray(lettersList.engKeys[a])) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a][0]);
-      } else if (span[i].textContent.length === 1) {
-        span[i].innerText = '';
-        span[i].append(lettersList.engKeys[a].toLowerCase());
+      if (language === 'en') {
+        if (Array.isArray(lettersList.engKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a][0]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.engKeys[a].toLowerCase());
+        }
+        a += 1;
+      } else {
+        if (Array.isArray(lettersList.rusKeys[a])) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a][0]);
+        } else if (span[i].textContent.length === 1) {
+          span[i].innerText = '';
+          span[i].append(lettersList.rusKeys[a].toLowerCase());
+        }
+        a += 1;
       }
-      a += 1;
     }
+  }
+});
+
+function switchLanguage() {
+  if (language === 'ru') {
+    for (let i = 0; i < 64; i += 1) {
+      const switcher = document.querySelectorAll('span');
+      if (Array.isArray(lettersList.rusKeys[i])) {
+        switcher[i].textContent = [lettersList.rusKeys[i][0]];
+      } else { switcher[i].textContent = lettersList.rusKeys[i]; }
+    }
+  } else {
+    for (let i = 0; i < 64; i += 1) {
+      const switcher = document.querySelectorAll('span');
+      if (Array.isArray(lettersList.engKeys[i])) {
+        switcher[i].textContent = [lettersList.engKeys[i][0]];
+      } else { switcher[i].textContent = lettersList.engKeys[i]; }
+    }
+  }
+}
+document.addEventListener('keydown', (event) => {
+  if (event.shiftKey && event.altKey && language === 'en') {
+    language = 'ru';
+    localStorage.language = 'ru';
+    switchLanguage();
+  } else if (event.shiftKey && event.altKey && language === 'ru') {
+    language = 'en';
+    localStorage.language = 'en';
+    switchLanguage();
   }
 });
